@@ -8,6 +8,10 @@ import {expressMiddleware} from '@apollo/server/express4';
 import typeDefs from './api/schemas/index';
 import resolvers from './api/resolvers/index';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
+import {
+  ApolloServerPluginLandingPageLocalDefault,
+  ApolloServerPluginLandingPageProductionDefault,
+} from '@apollo/server/plugin/landingPage/default';
 
 const app = express();
 
@@ -27,6 +31,11 @@ const app = express();
     const server = new ApolloServer({
       typeDefs,
       resolvers,
+      plugins: [
+        process.env.NODE_ENV === 'production'
+          ? ApolloServerPluginLandingPageProductionDefault()
+          : ApolloServerPluginLandingPageLocalDefault(),
+      ],
     });
 
     await server.start();
