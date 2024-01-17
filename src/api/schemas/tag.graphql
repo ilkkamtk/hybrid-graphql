@@ -1,0 +1,15 @@
+type Tag {
+  tag_id: ID
+  tag_name: String
+}
+
+type MediaItemTag {
+  media_id: ID
+  tag_id: ID
+}
+
+union TagResult = MediaItemTag | Tag
+
+type Query {
+  tags: [TagResult]
+}
