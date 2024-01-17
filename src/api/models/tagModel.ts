@@ -57,26 +57,6 @@ const postTag = async (
   }
 };
 
-// Request a list of media items by tag
-const fetchMediaByTag = async (tag: string): Promise<TagResult[] | null> => {
-  try {
-    const [rows] = await promisePool.execute<RowDataPacket[] & TagResult[]>(
-      `SELECT Tags.tag_id, Tags.tag_name, MediaItemTags.media_id
-       FROM Tags
-       JOIN MediaItemTags ON Tags.tag_id = MediaItemTags.tag_id
-       WHERE Tags.tag_name = ?`,
-      [tag],
-    );
-    if (rows.length === 0) {
-      return null;
-    }
-    return rows;
-  } catch (e) {
-    console.error('fetchMediaByTag error', (e as Error).message);
-    throw new Error((e as Error).message);
-  }
-};
-
 // Request a list of tags by media item id
 const fetchTagsByMediaId = async (id: number): Promise<TagResult[] | null> => {
   try {
@@ -131,4 +111,4 @@ const deleteTag = async (id: number): Promise<MessageResponse | null> => {
   }
 };
 
-export {fetchAllTags, postTag, fetchMediaByTag, fetchTagsByMediaId, deleteTag};
+export {fetchAllTags, postTag, fetchTagsByMediaId, deleteTag};

@@ -8,8 +8,11 @@ type MediaItem {
   title: String
   description: String
   created_at: String
+  tags: [Tag]
 }
 
 type Query {
   mediaItems: [MediaItem]
+  mediaItem(media_id: ID!): MediaItem
+  mediaItemsByTag(tag: String!): [MediaItem]
 }

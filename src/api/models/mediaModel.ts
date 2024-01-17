@@ -31,6 +31,29 @@ const fetchAllMedia = async (): Promise<MediaItem[] | null> => {
   }
 };
 
+// Request a list of media items by tag
+const fetchMediaByTag = async (tag: string): Promise<MediaItem[] | null> => {
+  try {
+    const [rows] = await promisePool.execute<RowDataPacket[] & MediaItem[]>(
+      `SELECT MediaItems.*,
+      CONCAT(?, MediaItems.filename) AS filename,
+      CONCAT(?, CONCAT(MediaItems.filename, "-thumb.png")) AS thumbnail
+      FROM MediaItems
+      JOIN MediaItemTags ON MediaItems.media_id = MediaItemTags.media_id
+      JOIN Tags ON MediaItemTags.tag_id = Tags.tag_id
+      WHERE Tags.tag_name = ?`,
+      [process.env.UPLOAD_URL, process.env.UPLOAD_URL, tag],
+    );
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows;
+  } catch (e) {
+    console.error('fetchMediaByTag error', (e as Error).message);
+    throw new Error((e as Error).message);
+  }
+};
+
 const fetchAllMediaByAppId = async (
   id: string,
 ): Promise<MediaItem[] | null> => {
@@ -312,6 +335,7 @@ const fetchHighestRatedMedia = async (): Promise<MediaItem | undefined> => {
 export {
   fetchAllMedia,
   fetchAllMediaByAppId,
+  fetchMediaByTag,
   fetchMediaById,
   postMedia,
   deleteMedia,
