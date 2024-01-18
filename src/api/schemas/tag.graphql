@@ -1,9 +1,17 @@
 type Tag {
   tag_id: ID
   tag_name: String
-  media_id: ID
 }
 
 type Query {
   tags: [Tag]
+}
+
+input TagInput {
+  tag_name: String
+}
+
+type Mutation {
+  createTag(input: TagInput!): Tag
+  deleteTag(input: ID!): Message
 }

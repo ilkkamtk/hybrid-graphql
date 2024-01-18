@@ -1,4 +1,4 @@
-import {fetchAllTags, fetchTagsByMediaId} from '../models/tagModel';
+import {deleteTag, fetchAllTags, fetchTagsByMediaId} from '../models/tagModel';
 
 export default {
   MediaItem: {
@@ -9,6 +9,11 @@ export default {
   Query: {
     tags: async () => {
       return await fetchAllTags();
+    },
+  },
+  Mutation: {
+    deleteTag: async (_parent: undefined, args: {input: string}) => {
+      return await deleteTag(Number(args.input));
     },
   },
 };

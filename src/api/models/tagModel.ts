@@ -1,15 +1,13 @@
 import {ResultSetHeader, RowDataPacket} from 'mysql2';
-import {TagResult} from '@sharedTypes/DBTypes';
+import {Tag, TagResult} from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
 
 // Request a list of tags
-const fetchAllTags = async (): Promise<TagResult[] | null> => {
+const fetchAllTags = async (): Promise<Tag[] | null> => {
   try {
-    const [rows] = await promisePool.execute<RowDataPacket[] & TagResult[]>(
-      `SELECT Tags.tag_id, Tags.tag_name, MediaItemTags.media_id
-       FROM Tags
-       JOIN MediaItemTags ON Tags.tag_id = MediaItemTags.tag_id`,
+    const [rows] = await promisePool.execute<RowDataPacket[] & Tag[]>(
+      'SELECT * FROM Tags',
     );
     if (rows.length === 0) {
       return null;
@@ -23,12 +21,10 @@ const fetchAllTags = async (): Promise<TagResult[] | null> => {
 
 // Post a new tag
 const postTag = async (
-  tag: Omit<TagResult, 'tag_id'>,
+  tag: Omit<Tag, 'tag_id'>,
 ): Promise<MessageResponse | null> => {
-  const connection = await promisePool.getConnection();
   try {
-    await connection.beginTransaction();
-    const [tagResult] = await connection.execute<ResultSetHeader>(
+    const [tagResult] = await promisePool.execute<ResultSetHeader>(
       'INSERT INTO Tags (tag_name) VALUES (?)',
       [tag.tag_name],
     );
@@ -36,24 +32,10 @@ const postTag = async (
       return null;
     }
 
-    const [mediaItemTagResult] = await connection.execute<ResultSetHeader>(
-      'INSERT INTO MediaItemTags (media_id, tag_id) VALUES (?, ?)',
-      [tag.media_id, tagResult.insertId],
-    );
-
-    await connection.commit();
-
-    if (mediaItemTagResult.affectedRows === 0) {
-      return null;
-    }
-
     return {message: 'Tag created'};
   } catch (e) {
-    await connection.rollback();
     console.error('postTag error', (e as Error).message);
     throw new Error((e as Error).message);
-  } finally {
-    connection.release();
   }
 };
 
@@ -82,18 +64,24 @@ const deleteTag = async (id: number): Promise<MessageResponse | null> => {
   const connection = await promisePool.getConnection();
   try {
     await connection.beginTransaction();
-    const [tagResult] = await connection.execute<ResultSetHeader>(
-      'DELETE FROM Tags WHERE tag_id = ?',
-      [id],
-    );
-    if (tagResult.affectedRows === 0) {
-      return null;
-    }
 
     const [mediaItemTagResult] = await connection.execute<ResultSetHeader>(
       'DELETE FROM MediaItemTags WHERE tag_id = ?',
       [id],
     );
+
+    if (mediaItemTagResult.affectedRows === 0) {
+      return null;
+    }
+
+    const [tagResult] = await connection.execute<ResultSetHeader>(
+      'DELETE FROM Tags WHERE tag_id = ?',
+      [id],
+    );
+
+    if (tagResult.affectedRows === 0) {
+      return null;
+    }
 
     await connection.commit();
 

@@ -1,0 +1,8 @@
+type Message {
+  message: String!
+}
+
+type MediaResponse {
+  message: String!
+  media: MediaItem!
+}
