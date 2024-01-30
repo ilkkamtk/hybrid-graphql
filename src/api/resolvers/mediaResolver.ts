@@ -7,8 +7,20 @@ import {
 } from '../models/mediaModel';
 import {MediaItem} from '@sharedTypes/DBTypes';
 import {postTagToMedia} from '../models/mediaModel';
+import {MyContext} from '../../local-types';
+import {GraphQLError} from 'graphql';
 
 export default {
+  Like: {
+    media: async (parent: {media_id: string}) => {
+      return await fetchMediaById(Number(parent.media_id));
+    },
+  },
+  Rating: {
+    media: async (parent: {media_id: string}) => {
+      return await fetchMediaById(Number(parent.media_id));
+    },
+  },
   Query: {
     mediaItems: async () => {
       return await fetchAllMedia();
@@ -26,7 +38,13 @@ export default {
     createMediaItem: async (
       _parent: undefined,
       args: {input: Omit<MediaItem, 'media_id' | 'created_at' | 'thumbnail'>},
+      context: MyContext,
     ) => {
+      if (!context.user || !context.user.user_id) {
+        throw new GraphQLError('Not authorized', {
+          extensions: {code: 'NOT_AUTHORIZED'},
+        });
+      }
       return await postMedia(args.input);
     },
     addTagToMediaItem: async (

@@ -125,7 +125,6 @@ const postMedia = async (
   const params = [user_id, filename, filesize, media_type, title, description];
   try {
     const result = await promisePool.execute<ResultSetHeader>(sql, params);
-    console.log('result', result);
     const [rows] = await promisePool.execute<RowDataPacket[] & MediaItem[]>(
       'SELECT * FROM MediaItems WHERE media_id = ?',
       [result[0].insertId],

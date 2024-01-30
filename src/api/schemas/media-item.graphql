@@ -1,28 +1,35 @@
 type MediaItem {
-  media_id: ID
-  user_id: ID
-  filename: String
-  thumbnail: String
-  filesize: Int
-  media_type: String
-  title: String
+  media_id: ID!
+  user_id: ID!
+  owner: User!
+  filename: String!
+  thumbnail: String!
+  filesize: Int!
+  media_type: String!
+  title: String!
   description: String
-  created_at: String
+  created_at: String!
   tags: [Tag]
+  likes: [Like]
+  ratings: [Rating]
 }
 
 type Query {
   mediaItems: [MediaItem]
   mediaItem(media_id: ID!): MediaItem
   mediaItemsByTag(tag: String!): [MediaItem]
+  """
+  Requires authorization token
+  """
+  myMediaItems: [MediaItem]
 }
 
 input MediaItemInput {
-  user_id: ID
-  filename: String
-  filesize: Int
-  media_type: String
-  title: String
+  user_id: ID!
+  filename: String!
+  filesize: Int!
+  media_type: String!
+  title: String!
   description: String
 }
 
@@ -32,7 +39,16 @@ input AddTagToMediaItemInput {
 }
 
 type Mutation {
+  """
+  Requires authorization token
+  """
   createMediaItem(input: MediaItemInput!): MediaItem
+  """
+  Requires authorization token
+  """
   addTagToMediaItem(input: AddTagToMediaItemInput!): MediaItem
+  """
+  Requires authorization token
+  """
   updateMediaItem(media_id: ID, input: MediaItemInput!): MediaResponse
 }
