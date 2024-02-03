@@ -19,16 +19,16 @@ const fetchAllTags = async (): Promise<Tag[] | null> => {
   }
 };
 
-const fetchFilesByTagByName = async (
-  tag_name: string,
+const fetchFilesByTagById = async (
+  tag_id: number,
 ): Promise<MediaItem[] | null> => {
   try {
+    console.log(tag_id);
     const [rows] = await promisePool.execute<RowDataPacket[] & MediaItem[]>(
       `SELECT * FROM MediaItems
        JOIN MediaItemTags ON MediaItems.media_id = MediaItemTags.media_id
-       JOIN Tags ON MediaItemTags.tag_id = Tags.tag_id
-       WHERE Tags.tag_name = ?`,
-      [tag_name],
+       WHERE MediaItemTags.tag_id = ?`,
+      [tag_id],
     );
     if (rows.length === 0) {
       return null;
@@ -177,7 +177,7 @@ export {
   fetchAllTags,
   postTag,
   fetchTagsByMediaId,
-  fetchFilesByTagByName,
+  fetchFilesByTagById,
   deleteTag,
   deleteTagFromMedia,
 };

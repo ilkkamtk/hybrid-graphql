@@ -10,7 +10,7 @@ import {
 import {MediaItem} from '@sharedTypes/DBTypes';
 import {MyContext} from '../../local-types';
 import {GraphQLError} from 'graphql';
-import {fetchFilesByTagByName} from '../models/tagModel';
+import {fetchFilesByTagById} from '../models/tagModel';
 
 export default {
   Like: {
@@ -30,8 +30,8 @@ export default {
     mediaItem: async (_parent: undefined, args: {media_id: string}) => {
       return await fetchMediaById(Number(args.media_id));
     },
-    mediaItemsByTag: async (_parent: undefined, args: {tag: string}) => {
-      const result = await fetchFilesByTagByName(args.tag);
+    mediaItemsByTag: async (_parent: undefined, args: {tag_id: string}) => {
+      const result = await fetchFilesByTagById(Number(args.tag_id));
       console.log(result);
       return result;
     },

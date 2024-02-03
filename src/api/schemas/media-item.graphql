@@ -21,7 +21,7 @@ type MediaItem {
 type Query {
   mediaItems: [MediaItem]
   mediaItem(media_id: ID!): MediaItem
-  mediaItemsByTag(tag: String!): [MediaItem]
+  mediaItemsByTag(tag_id: ID!): [MediaItem]
   """
   Requires authorization token
   """
