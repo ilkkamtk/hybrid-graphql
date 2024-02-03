@@ -2,7 +2,6 @@ import {ResultSetHeader, RowDataPacket} from 'mysql2';
 import {Like, UserLevel} from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
-import {GraphQLError} from 'graphql';
 
 // Request a list of likes
 const fetchAllLikes = async (): Promise<Like[] | null> => {
@@ -75,7 +74,7 @@ const fetchLikesByUserId = async (id: number): Promise<Like[] | null> => {
 const postLike = async (
   media_id: number,
   user_id: number,
-): Promise<Like | null> => {
+): Promise<MessageResponse | null> => {
   try {
     // check if like already exists
     const [likeExists] = await promisePool.execute<RowDataPacket[] & Like[]>(
@@ -83,7 +82,7 @@ const postLike = async (
       [media_id, user_id],
     );
     if (likeExists.length !== 0) {
-      throw new GraphQLError('Like already exists');
+      return null;
     }
 
     const [likeResult] = await promisePool.execute<ResultSetHeader>(
@@ -94,11 +93,7 @@ const postLike = async (
       return null;
     }
 
-    const [newLike] = await promisePool.execute<RowDataPacket[] & Like[]>(
-      'SELECT * FROM Likes WHERE like_id = ?',
-      [likeResult.insertId],
-    );
-    return newLike[0];
+    return {message: 'Like added'};
   } catch (e) {
     console.error('postLike error', (e as Error).message);
     throw new Error((e as Error).message);

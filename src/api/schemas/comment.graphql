@@ -20,7 +20,7 @@ type Mutation {
   """
   Requires authorization token
   """
-  createComment(media_id: ID!, comment_text: String!): Comment!
+  createComment(media_id: ID!, comment_text: String!): Message
   """
   Requires authorization token
   """

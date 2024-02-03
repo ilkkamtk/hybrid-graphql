@@ -4,7 +4,7 @@ import {
   fetchCommentsByMediaId,
   fetchCommentsCountByMediaId,
   fetchCommentsByUserId,
-  createComment,
+  postComment,
   updateComment,
   deleteComment,
 } from '../models/commentModel';
@@ -86,7 +86,7 @@ export default {
           extensions: {code: 'NOT_AUTHORIZED'},
         });
       }
-      return await createComment(
+      return await postComment(
         Number(args.media_id),
         context.user.user_id,
         args.comment_text,

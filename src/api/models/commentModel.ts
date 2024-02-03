@@ -2,7 +2,6 @@ import {ResultSetHeader, RowDataPacket} from 'mysql2';
 import {Comment, UserLevel} from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
-import {GraphQLError} from 'graphql';
 
 // Request a list of comments
 const fetchAllComments = async (): Promise<Comment[] | null> => {
@@ -93,11 +92,11 @@ const fetchCommentById = async (id: number): Promise<Comment | null> => {
 };
 
 // Create a new comment
-const createComment = async (
+const postComment = async (
   media_id: number,
   user_id: number,
   comment_text: string,
-): Promise<Comment> => {
+): Promise<MessageResponse | null> => {
   try {
     const sql = promisePool.format(
       'INSERT INTO Comments (media_id, user_id, comment_text) VALUES (?, ?, ?)',
@@ -105,13 +104,10 @@ const createComment = async (
     );
     console.log(sql);
     const [result] = await promisePool.execute<ResultSetHeader>(sql);
-    if (result.affectedRows === 1) {
-      const comment = await fetchCommentById(result.insertId);
-      if (comment) {
-        return comment;
-      }
+    if (result.affectedRows === 0) {
+      return null;
     }
-    throw new GraphQLError('Comment not created');
+    return {message: 'Comment added'};
   } catch (e) {
     console.error('createComment error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -124,7 +120,7 @@ const updateComment = async (
   comment_id: number,
   user_id: number,
   user_level: UserLevel['level_name'],
-): Promise<MessageResponse> => {
+): Promise<MessageResponse | null> => {
   try {
     let sql = '';
     if (user_level === 'Admin') {
@@ -138,10 +134,10 @@ const updateComment = async (
       comment_id,
       user_id,
     ]);
-    if (result.affectedRows === 1) {
-      return {message: 'Comment updated'};
+    if (result.affectedRows === 0) {
+      return null;
     }
-    throw new GraphQLError('Comment not updated');
+    return {message: 'Comment updated'};
   } catch (e) {
     console.error('updateComment error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -153,7 +149,7 @@ const deleteComment = async (
   id: number,
   user_id: number,
   user_level: UserLevel['level_name'],
-): Promise<MessageResponse> => {
+): Promise<MessageResponse | null> => {
   try {
     let sql = '';
     if (user_level === 'Admin') {
@@ -165,10 +161,10 @@ const deleteComment = async (
       id,
       user_id,
     ]);
-    if (result.affectedRows === 1) {
-      return {message: 'Comment deleted'};
+    if (result.affectedRows === 0) {
+      return null;
     }
-    throw new GraphQLError('Comment not deleted');
+    return {message: 'Comment deleted'};
   } catch (e) {
     console.error('deleteComment error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -181,7 +177,7 @@ export {
   fetchCommentsCountByMediaId,
   fetchCommentsByUserId,
   fetchCommentById,
-  createComment,
+  postComment,
   updateComment,
   deleteComment,
 };
