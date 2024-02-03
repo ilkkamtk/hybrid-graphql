@@ -80,7 +80,7 @@ const postRating = async (
   media_id: number,
   user_id: number,
   rating_value: number,
-): Promise<Rating | null> => {
+): Promise<MessageResponse | null> => {
   try {
     // check if rating already exists, if so delete it because of foreign key constraints
     const [ratingExists] = await promisePool.execute<
@@ -109,7 +109,7 @@ const postRating = async (
     if (rows.length === 0) {
       return null;
     }
-    return rows[0];
+    return {message: 'Rating added'};
   } catch (e) {
     console.error('postRating error', (e as Error).message);
     throw new Error((e as Error).message);

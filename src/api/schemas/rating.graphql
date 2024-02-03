@@ -22,9 +22,9 @@ type Mutation {
 
   createRating will update the rating if it already exists
   """
-  createRating(media_id: ID!, rating_value: Int!): Rating!
+  createRating(media_id: ID!, rating_value: Int!): Message
   """
   Requires authorization token
   """
-  deleteRating(rating_id: ID!): Message!
+  deleteRating(rating_id: ID!): Message
 }
