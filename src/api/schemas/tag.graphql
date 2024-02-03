@@ -5,10 +5,16 @@ type Tag {
 
 type Query {
   tags: [Tag]
+  tagsByMediaId(media_id: ID!): [Tag]
 }
 
 input TagInput {
   tag_name: String
+  media_id: ID
+}
+
+input TagInputID {
+  tag_id: ID
   media_id: ID
 }
 
@@ -21,4 +27,9 @@ type Mutation {
   Requires admin authorization token
   """
   deleteTag(input: ID!): Message
+  """
+  Requires authorization token
+  """
+  deleteTagFromMediaItem(input: TagInputID!): Message
+  """
 }

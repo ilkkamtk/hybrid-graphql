@@ -3,7 +3,6 @@ import {
   fetchAllMedia,
   fetchHighestRatedMedia,
   fetchMediaById,
-  fetchMediaByTag,
   fetchMostLikedMedia,
   postMedia,
   putMedia,
@@ -11,6 +10,7 @@ import {
 import {MediaItem} from '@sharedTypes/DBTypes';
 import {MyContext} from '../../local-types';
 import {GraphQLError} from 'graphql';
+import {fetchFilesByTagByName} from '../models/tagModel';
 
 export default {
   Like: {
@@ -31,7 +31,7 @@ export default {
       return await fetchMediaById(Number(args.media_id));
     },
     mediaItemsByTag: async (_parent: undefined, args: {tag: string}) => {
-      const result = await fetchMediaByTag(args.tag);
+      const result = await fetchFilesByTagByName(args.tag);
       console.log(result);
       return result;
     },
