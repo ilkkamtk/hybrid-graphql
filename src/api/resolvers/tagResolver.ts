@@ -31,13 +31,16 @@ export default {
       }
       return await deleteTag(Number(args.input));
     },
-    createTag: async (_parent: undefined, args: {tag_name: string}) => {
+    createTag: async (
+      _parent: undefined,
+      args: {tag_name: string; media_id: string},
+    ) => {
       // capitalize first letter of tag_name because we want all tags to be the same
       // format in the database so we can query them easily and check for duplicates
       args.tag_name =
         args.tag_name.charAt(0).toUpperCase() +
         args.tag_name.slice(1).toLowerCase();
-      return await postTag(args.tag_name);
+      return await postTag(args.tag_name, Number(args.media_id));
     },
   },
 };

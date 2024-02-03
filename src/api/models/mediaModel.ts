@@ -3,14 +3,6 @@ import {MediaItem, UserLevel} from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
 import {fetchData} from '../../lib/functions';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
-import {fetchTagByName, postTag} from './tagModel';
-
-/**
- * Get all media items from the database
- *
- * @returns {array} - array of media items
- * @throws {Error} - error if database query fails
- */
 
 const fetchAllMedia = async (): Promise<MediaItem[] | null> => {
   const uploadPath = process.env.UPLOAD_URL;
@@ -55,37 +47,6 @@ const fetchMediaByTag = async (tag: string): Promise<MediaItem[] | null> => {
   }
 };
 
-const fetchAllMediaByAppId = async (
-  id: string,
-): Promise<MediaItem[] | null> => {
-  const uploadPath = process.env.UPLOAD_URL;
-  try {
-    const [rows] = await promisePool.execute<RowDataPacket[] & MediaItem[]>(
-      `SELECT *,
-      CONCAT(?, filename) AS filename,
-      CONCAT(?, CONCAT(filename, "-thumb.png")) AS thumbnail
-      FROM MediaItems
-      WHERE app_id = ?`,
-      [uploadPath, uploadPath, id],
-    );
-    if (rows.length === 0) {
-      return null;
-    }
-    return rows;
-  } catch (e) {
-    console.error('fetchAllMedia error', (e as Error).message);
-    throw new Error((e as Error).message);
-  }
-};
-
-/**
- * Get media item by id from the database
- *
- * @param {number} id - id of the media item
- * @returns {object} - object containing all information about the media item
- * @throws {Error} - error if database query fails
- */
-
 const fetchMediaById = async (id: number): Promise<MediaItem | null> => {
   const uploadPath = process.env.UPLOAD_URL;
   try {
@@ -110,13 +71,6 @@ const fetchMediaById = async (id: number): Promise<MediaItem | null> => {
   }
 };
 
-/**
- * Add new media item to database
- *
- * @param {object} media - object containing all information about the new media item
- * @returns {object} - object containing id of the inserted media item in db
- * @throws {Error} - error if database query fails
- */
 const postMedia = async (
   media: Omit<MediaItem, 'media_id' | 'created_at' | 'thumbnail'>,
 ): Promise<MediaItem | null> => {
@@ -140,24 +94,25 @@ const postMedia = async (
   }
 };
 
-/**
- * Update media item in database
- *
- * @param {object} media - object containing all information about the media item
- * @param {number} id - id of the media item
- * @returns {object} - object containing id of the updated media item in db
- * @throws {Error} - error if database query fails
- */
-
 const putMedia = async (
   media: Pick<MediaItem, 'title' | 'description'>,
   id: number,
+  user_id: number,
+  user_level: UserLevel['level_name'],
 ): Promise<MediaItem | null> => {
   try {
-    const sql = promisePool.format(
-      'UPDATE MediaItems SET ? WHERE media_id = ?',
-      [media, id],
-    );
+    let sql = '';
+    if (user_level === 'Admin') {
+      sql = promisePool.format('UPDATE MediaItems SET ? WHERE media_id = ?', [
+        media,
+        id,
+      ]);
+    } else {
+      sql = promisePool.format(
+        'UPDATE MediaItems SET ? WHERE media_id = ? AND user_id = ?',
+        [media, id, user_id],
+      );
+    }
     const result = await promisePool.execute<ResultSetHeader>(sql);
     console.log('result', result);
     if (result[0].affectedRows === 0) {
@@ -174,14 +129,6 @@ const putMedia = async (
     throw new Error((e as Error).message);
   }
 };
-
-/**
- * Delete media item from database
- *
- * @param {number} id - id of the media item
- * @returns {object} - object containing id of the deleted media item in db
- * @throws {Error} - error if database query fails
- */
 
 const deleteMedia = async (
   media_id: number,
@@ -266,13 +213,6 @@ const deleteMedia = async (
   }
 };
 
-/**
- * Get all the most liked media items from the database
- *
- * @returns {object} - object containing all information about the most liked media item
- * @throws {Error} - error if database query fails
- */
-
 const fetchMostLikedMedia = async (): Promise<MediaItem | undefined> => {
   try {
     const [rows] = await promisePool.execute<
@@ -294,13 +234,6 @@ const fetchMostLikedMedia = async (): Promise<MediaItem | undefined> => {
   }
 };
 
-/**
- * Get all the most commented media items from the database
- *
- * @returns {object} - object containing all information about the most commented media item
- * @throws {Error} - error if database query fails
- */
-
 const fetchMostCommentedMedia = async (): Promise<MediaItem | undefined> => {
   try {
     const [rows] = await promisePool.execute<RowDataPacket[] & MediaItem[]>(
@@ -320,13 +253,6 @@ const fetchMostCommentedMedia = async (): Promise<MediaItem | undefined> => {
     throw new Error((e as Error).message);
   }
 };
-
-/**
- * Get all the highest rated media items from the database
- *
- * @returns {object} - object containing all information about the highest rated media item
- * @throws {Error} - error if database query fails
- */
 
 const fetchHighestRatedMedia = async (): Promise<MediaItem | undefined> => {
   try {
@@ -348,75 +274,8 @@ const fetchHighestRatedMedia = async (): Promise<MediaItem | undefined> => {
   }
 };
 
-// Attach a tag to a media item
-const postTagToMedia = async (
-  tag_name: string,
-  media_id: number,
-): Promise<MediaItem | null> => {
-  try {
-    let tag_id: number = 0;
-    // check if tag exists (case insensitive)
-    const tagResult = await fetchTagByName(tag_name);
-    if (!tagResult) {
-      // if tag does not exist create it
-      const insertResult = await postTag(tag_name);
-      if (!insertResult) {
-        return null;
-      }
-      // get tag_id from created tag
-      tag_id = insertResult.tag_id;
-    } else {
-      // if tag exists get tag_id from the first result
-      tag_id = tagResult.tag_id;
-    }
-    const [MediaItemTagsResult] = await promisePool.execute<ResultSetHeader>(
-      'INSERT INTO MediaItemTags (tag_id, media_id) VALUES (?, ?)',
-      [tag_id, media_id],
-    );
-    if (MediaItemTagsResult.affectedRows === 0) {
-      return null;
-    }
-
-    return await fetchMediaById(media_id);
-  } catch (e) {
-    console.error('postTagToMedia error', (e as Error).message);
-    throw new Error((e as Error).message);
-  }
-};
-
-const deleteTagFromMedia = async (
-  tag_id: string,
-  media_id: number,
-  user_id: number,
-): Promise<MediaItem | null> => {
-  try {
-    // check if user owns media item
-    const [mediaItem] = await promisePool.execute<RowDataPacket[]>(
-      'SELECT * FROM MediaItems WHERE media_id = ? AND user_id = ?',
-      [media_id, user_id],
-    );
-
-    if (mediaItem.length === 0) {
-      throw new Error('Media item not found or user does not own media item');
-    }
-
-    const [result] = await promisePool.execute<ResultSetHeader>(
-      'DELETE FROM MediaItemTags WHERE tag_id = ? AND media_id = ?',
-      [tag_id, media_id],
-    );
-    if (result.affectedRows === 0) {
-      return null;
-    }
-
-    return await fetchMediaById(media_id);
-  } catch (e) {
-    console.error('deleteTagFromMedia error', (e as Error).message);
-    throw new Error((e as Error).message);
-  }
-};
 export {
   fetchAllMedia,
-  fetchAllMediaByAppId,
   fetchMediaByTag,
   fetchMediaById,
   postMedia,
@@ -425,6 +284,4 @@ export {
   fetchMostCommentedMedia,
   fetchHighestRatedMedia,
   putMedia,
-  postTagToMedia,
-  deleteTagFromMedia,
 };

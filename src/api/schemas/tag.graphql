@@ -9,6 +9,7 @@ type Query {
 
 input TagInput {
   tag_name: String
+  media_id: ID
 }
 
 type Mutation {

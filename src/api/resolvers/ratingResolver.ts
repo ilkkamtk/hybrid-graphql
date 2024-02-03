@@ -2,7 +2,6 @@ import {GraphQLError} from 'graphql';
 import {MyContext} from '../../local-types';
 import {
   deleteRating,
-  deleteRatingAsAdmin,
   fetchAllRatings,
   fetchAverageRatingByMediaId,
   fetchRatingsByMediaId,
@@ -34,11 +33,12 @@ export default {
           extensions: {code: 'NOT_AUTHORIZED'},
         });
       }
-      if (context.user.level_name !== 'Admin') {
-        return await deleteRatingAsAdmin(Number(args.input));
-      }
       const user_id = context.user.user_id;
-      return await deleteRating(Number(args.input), user_id);
+      return await deleteRating(
+        Number(args.input),
+        user_id,
+        context.user.level_name,
+      );
     },
     createRating: async (
       _parent: undefined,
@@ -55,6 +55,7 @@ export default {
         Number(args.media_id),
         user_id,
         Number(args.rating_value),
+        context.user.level_name,
       );
     },
   },
