@@ -1,5 +1,5 @@
 import {ResultSetHeader, RowDataPacket} from 'mysql2';
-import {Like} from '@sharedTypes/DBTypes';
+import {Like, UserLevel} from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
 import {GraphQLError} from 'graphql';
@@ -33,6 +33,23 @@ const fetchLikesByMediaId = async (id: number): Promise<Like[] | null> => {
     return rows;
   } catch (e) {
     console.error('fetchLikesByMediaId error', (e as Error).message);
+    throw new Error((e as Error).message);
+  }
+};
+
+// Request a count of likes by media item id
+const fetchLikesCountByMediaId = async (id: number): Promise<number | null> => {
+  try {
+    const [rows] = await promisePool.execute<RowDataPacket[] & Like[]>(
+      'SELECT COUNT(*) as likesCount FROM Likes WHERE media_id = ?',
+      [id],
+    );
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows[0].likesCount;
+  } catch (e) {
+    console.error('fetchLikesCountByMediaId error', (e as Error).message);
     throw new Error((e as Error).message);
   }
 };
@@ -92,30 +109,24 @@ const postLike = async (
 const deleteLike = async (
   like_id: number,
   user_id: number,
+  user_level: UserLevel['level_name'],
 ): Promise<MessageResponse | null> => {
   try {
-    const [likeResult] = await promisePool.execute<ResultSetHeader>(
-      'DELETE FROM Likes WHERE like_id = ? AND user_id = ?',
-      [like_id, user_id],
-    );
-    if (likeResult.affectedRows === 0) {
-      return null;
+    let sql = '';
+    if (user_level === 'Admin') {
+      sql = promisePool.format('DELETE FROM Likes WHERE like_id = ?', [
+        like_id,
+      ]);
+    } else {
+      sql = promisePool.format(
+        'DELETE FROM Likes WHERE like_id = ? AND user_id = ?',
+        [like_id, user_id],
+      );
     }
-    return {message: 'Like deleted'};
-  } catch (e) {
-    console.error('deleteLike error', (e as Error).message);
-    throw new Error((e as Error).message);
-  }
-};
 
-const deleteLikeAsAdmin = async (
-  like_id: number,
-): Promise<MessageResponse | null> => {
-  try {
-    const [likeResult] = await promisePool.execute<ResultSetHeader>(
-      'DELETE FROM Likes WHERE like_id = ?',
-      [like_id],
-    );
+    console.log(sql);
+
+    const [likeResult] = await promisePool.execute<ResultSetHeader>(sql);
     if (likeResult.affectedRows === 0) {
       return null;
     }
@@ -132,5 +143,5 @@ export {
   fetchLikesByUserId,
   postLike,
   deleteLike,
-  deleteLikeAsAdmin,
+  fetchLikesCountByMediaId,
 };

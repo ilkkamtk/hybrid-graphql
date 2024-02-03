@@ -26,5 +26,5 @@ type Mutation {
   """
   Requires authorization token
   """
-  deleteRating(rating_id: ID!): DeleteResponse!
+  deleteRating(rating_id: ID!): Message!
 }

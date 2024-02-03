@@ -12,6 +12,12 @@ input TagInput {
 }
 
 type Mutation {
+  """
+  Requires authorization token
+  """
   createTag(input: TagInput!): Tag
+  """
+  Requires admin authorization token
+  """
   deleteTag(input: ID!): Message
 }

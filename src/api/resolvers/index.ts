@@ -3,6 +3,7 @@ import tagResolver from './tagResolver';
 import userResolver from './userResolver';
 import likeResolver from './likeResolver';
 import ratingResolver from './ratingResolver';
+import commentResolver from './commentResolver';
 
 export default [
   mediaResolver,
@@ -10,4 +11,5 @@ export default [
   userResolver,
   likeResolver,
   ratingResolver,
+  commentResolver,
 ];

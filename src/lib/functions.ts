@@ -2,7 +2,6 @@ import {ErrorResponse} from '@sharedTypes/MessageTypes';
 import jwt from 'jsonwebtoken';
 import {MyContext, UserFromToken} from '../local-types';
 import {Request} from 'express';
-import {GraphQLError} from 'graphql';
 
 const fetchData = async <T>(
   url: string,
@@ -25,19 +24,31 @@ const fetchData = async <T>(
 const authenticate = async (req: Request): Promise<MyContext> => {
   const authHeader = req.headers.authorization;
   if (authHeader) {
-    const token = authHeader.split(' ')[1];
     try {
+      const token = authHeader.split(' ')[1];
       const user = jwt.verify(
         token,
         process.env.JWT_SECRET as string,
       ) as UserFromToken;
+      // or check if user is in the auth server database
+      // console.log(token);
+      // const user = await fetchData<UserResponse>(
+      //   `${process.env.AUTH_SERVER}/users/token`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   },
+      // );
+      if (!user) {
+        return {};
+      }
       // add token to user object so we can use it in resolvers
       user.token = token;
+      console.log('user from token', user);
       return {user};
     } catch (error) {
-      throw new GraphQLError('Invalid/Expired token', {
-        extensions: {code: 'NOT_AUTHORIZED'},
-      });
+      return {};
     }
   }
   return {};

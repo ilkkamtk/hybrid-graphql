@@ -1,9 +1,10 @@
 import {GraphQLError} from 'graphql';
 import {
   deleteLike,
-  deleteLikeAsAdmin,
   fetchAllLikes,
   fetchLikesByMediaId,
+  fetchLikesByUserId,
+  fetchLikesCountByMediaId,
   postLike,
 } from '../models/likeModel';
 import {MyContext} from '../../local-types';
@@ -13,16 +14,17 @@ export default {
     likes: async (parent: {media_id: string}) => {
       return await fetchLikesByMediaId(Number(parent.media_id));
     },
+    likes_count: async (parent: {media_id: string}) => {
+      return await fetchLikesCountByMediaId(Number(parent.media_id));
+    },
   },
   Query: {
     likes: async () => {
       return await fetchAllLikes();
     },
-  },
-  Mutation: {
-    deleteLike: async (
+    myLikes: async (
       _parent: undefined,
-      args: {input: string},
+      _args: undefined,
       context: MyContext,
     ) => {
       if (!context.user || !context.user.user_id) {
@@ -30,11 +32,25 @@ export default {
           extensions: {code: 'NOT_AUTHORIZED'},
         });
       }
-      if (context.user.level_name !== 'Admin') {
-        return await deleteLikeAsAdmin(Number(args.input));
+      return await fetchLikesByUserId(Number(context.user.user_id));
+    },
+  },
+  Mutation: {
+    deleteLike: async (
+      _parent: undefined,
+      args: {like_id: string},
+      context: MyContext,
+    ) => {
+      if (!context.user || !context.user.user_id) {
+        throw new GraphQLError('Not authorized', {
+          extensions: {code: 'NOT_AUTHORIZED'},
+        });
       }
-      const user_id = context.user.user_id;
-      return await deleteLike(Number(args.input), user_id);
+      return await deleteLike(
+        Number(args.like_id),
+        context.user.user_id,
+        context.user.level_name,
+      );
     },
     createLike: async (
       _parent: undefined,

@@ -2,29 +2,13 @@ type Message {
   message: String!
 }
 
-type MediaResponse {
-  message: String!
-  media: MediaItem!
-}
-
 type LoginResponse {
   user: User!
   token: String!
   message: String!
 }
 
-type OnlyID {
-  user_id: ID
-  tag_id: ID
-  media_id: ID
-  like_id: ID
-  rating_id: ID
-}
-
-type DeleteResponse {
-  message: String!
-  """
-  Choose from user_id, tag_id, media_id, like_id or rating_id depending on what you deleted
-  """
-  user: OnlyID!
+type AvailabeResponse {
+  available: Boolean
+  message: String
 }

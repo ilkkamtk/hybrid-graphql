@@ -4,14 +4,18 @@ import {
   deleteRating,
   deleteRatingAsAdmin,
   fetchAllRatings,
+  fetchAverageRatingByMediaId,
   fetchRatingsByMediaId,
   postRating,
 } from '../models/ratingModel';
 
 export default {
   MediaItem: {
-    likes: async (parent: {media_id: string}) => {
+    ratings: async (parent: {media_id: string}) => {
       return await fetchRatingsByMediaId(Number(parent.media_id));
+    },
+    average_rating: async (parent: {media_id: string}) => {
+      return await fetchAverageRatingByMediaId(Number(parent.media_id));
     },
   },
   Query: {

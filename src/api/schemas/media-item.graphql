@@ -12,6 +12,10 @@ type MediaItem {
   tags: [Tag]
   likes: [Like]
   ratings: [Rating]
+  comments: [Comment]
+  comments_count: Int!
+  likes_count: Int!
+  average_rating: Float
 }
 
 type Query {
@@ -22,6 +26,9 @@ type Query {
   Requires authorization token
   """
   myMediaItems: [MediaItem]
+  mostLikedMediaItem: MediaItem
+  mostRatedMediaItem: MediaItem
+  mostCommentedMediaItem: MediaItem
 }
 
 input MediaItemInput {
@@ -50,5 +57,13 @@ type Mutation {
   """
   Requires authorization token
   """
-  updateMediaItem(media_id: ID, input: MediaItemInput!): MediaResponse
+  updateMediaItem(media_id: ID, input: MediaItemInput!): MediaItem
+  """
+  Requires authorization token
+  """
+  deleteMediaItem(media_id: ID!): Message
+  """
+  Requires authorization token
+  """
+  deleteTagFromMediaItem(media_id: ID!, tag_name: String!): Message
 }

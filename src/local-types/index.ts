@@ -1,7 +1,7 @@
 import {UserWithLevel} from '@sharedTypes/DBTypes';
 
 type UserFromToken = Pick<UserWithLevel, 'user_id' | 'level_name'> & {
-  token: string;
+  token?: string;
 };
 
 type MyContext = {

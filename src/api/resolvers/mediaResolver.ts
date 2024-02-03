@@ -1,7 +1,10 @@
 import {
+  deleteMedia,
   fetchAllMedia,
+  fetchHighestRatedMedia,
   fetchMediaById,
   fetchMediaByTag,
+  fetchMostLikedMedia,
   postMedia,
   putMedia,
 } from '../models/mediaModel';
@@ -32,6 +35,24 @@ export default {
       const result = await fetchMediaByTag(args.tag);
       console.log(result);
       return result;
+    },
+    myMediaItems: async (
+      _parent: undefined,
+      _args: undefined,
+      context: MyContext,
+    ) => {
+      if (!context.user || !context.user.user_id) {
+        throw new GraphQLError('Not authorized', {
+          extensions: {code: 'NOT_AUTHORIZED'},
+        });
+      }
+      return await fetchMediaById(Number(context.user.user_id));
+    },
+    mostLikedMediaItem: async () => {
+      return await fetchMostLikedMedia();
+    },
+    mostRatedMediaItem: async () => {
+      return await fetchHighestRatedMedia();
     },
   },
   Mutation: {
@@ -67,6 +88,23 @@ export default {
       args: {media_id: string; input: MediaItem},
     ) => {
       return await putMedia(args.input, Number(args.media_id));
+    },
+    deleteMediaItem: async (
+      _parent: undefined,
+      args: {media_id: string},
+      context: MyContext,
+    ) => {
+      if (!context.user || !context.user.user_id || !context.user.token) {
+        throw new GraphQLError('Not authorized', {
+          extensions: {code: 'NOT_AUTHORIZED'},
+        });
+      }
+      return await deleteMedia(
+        Number(args.media_id),
+        Number(context.user.user_id),
+        context.user.token,
+        context.user.level_name,
+      );
     },
   },
 };

@@ -38,6 +38,24 @@ const fetchRatingsByMediaId = async (
   }
 };
 
+const fetchAverageRatingByMediaId = async (
+  media_id: number,
+): Promise<number | null> => {
+  try {
+    const [rows] = await promisePool.execute<RowDataPacket[] & Rating[]>(
+      'SELECT AVG(rating_value) as averageRating FROM Ratings WHERE media_id = ?',
+      [media_id],
+    );
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows[0].averageRating;
+  } catch (e) {
+    console.error('fetchRatingsByMediaId error', (e as Error).message);
+    throw new Error((e as Error).message);
+  }
+};
+
 // Request a list of ratings by user id
 const fetchRatingsByUserId = async (
   media_id: number,
@@ -141,6 +159,7 @@ export {
   fetchAllRatings,
   fetchRatingsByMediaId,
   fetchRatingsByUserId,
+  fetchAverageRatingByMediaId,
   postRating,
   deleteRating,
   deleteRatingAsAdmin,

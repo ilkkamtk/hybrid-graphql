@@ -23,5 +23,5 @@ type Mutation {
   """
   Requires authorization token
   """
-  deleteLike(like_id: ID!): DeleteResponse!
+  deleteLike(like_id: ID!): Message!
 }

@@ -19,20 +19,44 @@ const fetchAllTags = async (): Promise<Tag[] | null> => {
   }
 };
 
-// Post a new tag
-const postTag = async (
-  tag: Omit<Tag, 'tag_id'>,
-): Promise<MessageResponse | null> => {
+const fetchTagByName = async (tag_name: string): Promise<Tag | null> => {
   try {
+    const [rows] = await promisePool.execute<RowDataPacket[] & Tag[]>(
+      'SELECT * FROM Tags WHERE tag_name = ?',
+      [tag_name],
+    );
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows[0];
+  } catch (e) {
+    console.error('fetchTagByName error', (e as Error).message);
+    throw new Error((e as Error).message);
+  }
+};
+
+// Post a new tag
+const postTag = async (tag_name: string): Promise<Tag | null> => {
+  try {
+    // check if tag already exists
+    const oldTag = await fetchTagByName(tag_name);
+    if (oldTag) {
+      return null;
+    }
+
     const [tagResult] = await promisePool.execute<ResultSetHeader>(
       'INSERT INTO Tags (tag_name) VALUES (?)',
-      [tag.tag_name],
+      [tag_name],
     );
     if (tagResult.affectedRows === 0) {
       return null;
     }
 
-    return {message: 'Tag created'};
+    const [rows] = await promisePool.execute<RowDataPacket[] & Tag[]>(
+      'SELECT * FROM Tags WHERE tag_id = ?',
+      [tagResult.insertId],
+    );
+    return rows[0];
   } catch (e) {
     console.error('postTag error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -99,4 +123,4 @@ const deleteTag = async (id: number): Promise<MessageResponse | null> => {
   }
 };
 
-export {fetchAllTags, postTag, fetchTagsByMediaId, deleteTag};
+export {fetchAllTags, postTag, fetchTagsByMediaId, fetchTagByName, deleteTag};

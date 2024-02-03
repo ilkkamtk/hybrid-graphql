@@ -13,6 +13,8 @@ type Query {
   Requires authorization token
   """
   checkToken: User
+  checkEmail(email: String!): AvailabeResponse!
+  checkUsername(username: String!): AvailabeResponse!
 }
 
 input InputUser {
@@ -31,5 +33,5 @@ type Mutation {
   """
   Requires authorization token
   """
-  deleteUser: DeleteResponse!
+  deleteUser: Message!
 }
