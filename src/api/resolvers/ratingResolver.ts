@@ -21,6 +21,21 @@ export default {
     ratings: async () => {
       return await fetchAllRatings();
     },
+    ratingsByMediaID: async (_parent: undefined, args: {media_id: string}) => {
+      return await fetchRatingsByMediaId(Number(args.media_id));
+    },
+    myRatings: async (
+      _parent: undefined,
+      _args: undefined,
+      context: MyContext,
+    ) => {
+      if (!context.user || !context.user.user_id) {
+        throw new GraphQLError('Not authorized', {
+          extensions: {code: 'NOT_AUTHORIZED'},
+        });
+      }
+      return await fetchRatingsByMediaId(Number(context.user.user_id));
+    },
   },
   Mutation: {
     deleteRating: async (

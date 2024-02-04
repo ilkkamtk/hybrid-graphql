@@ -9,7 +9,6 @@ type Comment {
 type Query {
   comments: [Comment]
   commentsByMediaID(media_id: ID!): [Comment]
-  commentsByUserID(user_id: ID!): [Comment]
   """
   Requires authorization token
   """

@@ -9,7 +9,6 @@ type Rating {
 type Query {
   ratings: [Rating!]!
   ratingsByMediaID(media_id: ID!): [Rating!]!
-  ratingsByUserID(user_id: ID!): [Rating!]!
   """
   Requires authorization token
   """

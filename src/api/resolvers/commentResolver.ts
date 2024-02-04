@@ -26,9 +26,6 @@ export default {
     commentsByMediaID: async (_parent: undefined, args: {media_id: string}) => {
       return await fetchCommentsByMediaId(Number(args.media_id));
     },
-    commentsByUserID: async (_parent: undefined, args: {user_id: string}) => {
-      return await fetchCommentsByUserId(Number(args.user_id));
-    },
     myComments: async (
       _parent: undefined,
       _args: undefined,
