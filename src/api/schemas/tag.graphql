@@ -31,5 +31,4 @@ type Mutation {
   Requires authorization token
   """
   deleteTagFromMediaItem(input: TagInputID!): Message
-  """
 }
