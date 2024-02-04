@@ -84,11 +84,13 @@ const postLike = async (
     if (likeExists.length !== 0) {
       return null;
     }
-
-    const [likeResult] = await promisePool.execute<ResultSetHeader>(
+    const sql = promisePool.format(
       'INSERT INTO Likes (user_id, media_id) VALUES (?, ?)',
       [user_id, media_id],
     );
+
+    console.log(sql);
+    const [likeResult] = await promisePool.execute<ResultSetHeader>(sql);
     if (likeResult.affectedRows === 0) {
       return null;
     }

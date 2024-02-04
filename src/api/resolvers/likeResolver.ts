@@ -63,6 +63,7 @@ export default {
         });
       }
       const user_id = context.user.user_id;
+      console.log(Number(args.media_id), user_id);
       return await postLike(Number(args.media_id), user_id);
     },
   },
