@@ -1,9 +1,11 @@
+scalar DateTime
+
 type Comment {
   comment_id: ID!
   media: MediaItem!
   user: User!
   comment_text: String!
-  created_at: String!
+  created_at: DateTime!
 }
 
 type Query {

@@ -1,8 +1,10 @@
+scalar DateTime
+
 type Like {
   like_id: ID!
   media: MediaItem!
   user: User!
-  created_at: String!
+  created_at: DateTime!
 }
 
 type Query {
