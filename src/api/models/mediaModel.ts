@@ -114,6 +114,8 @@ const deleteMedia = async (
   level_name: UserLevel['level_name'],
 ): Promise<MessageResponse> => {
   // get media item from database for filename
+
+  console.log('media_id', media_id, 'user_id', user_id, 'token', token);
   const media = await fetchMediaById(media_id);
 
   if (!media) {
@@ -143,17 +145,24 @@ const deleteMedia = async (
       media_id,
     ]);
 
+    await connection.execute('DELETE FROM MediaItemTags WHERE media_id = ?;', [
+      media_id,
+    ]);
+
     let sql = '';
     if (level_name === 'Admin') {
-      sql = 'DELETE FROM MediaItems WHERE media_id = ?;';
+      sql = connection.format('DELETE FROM MediaItems WHERE media_id = ?', [
+        media_id,
+      ]);
     } else {
-      sql = 'DELETE FROM MediaItems WHERE media_id = ? AND user_id = ?;';
+      sql = connection.format(
+        'DELETE FROM MediaItems WHERE media_id = ? AND user_id = ?',
+        [media_id, user_id],
+      );
     }
+    console.log(sql);
     // note, user_id in SQL so that only the owner of the media item can delete it
-    const [result] = await connection.execute<ResultSetHeader>(sql, [
-      media_id,
-      user_id,
-    ]);
+    const [result] = await connection.execute<ResultSetHeader>(sql);
 
     if (result.affectedRows === 0) {
       return {message: 'Media not deleted'};
@@ -167,20 +176,26 @@ const deleteMedia = async (
       },
     };
 
-    const deleteResult = await fetchData<MessageResponse>(
-      `${process.env.UPLOAD_SERVER}/delete/${media.filename}`,
-      options,
-    );
+    // separate try-catch block for delete request to upload server
+    // so that it doesn't affect the transaction
+    // (there might be items without files when testing)
+    try {
+      const deleteResult = await fetchData<MessageResponse>(
+        `${process.env.UPLOAD_SERVER}/delete/${media.filename}`,
+        options,
+      );
 
-    console.log('deleteResult', deleteResult);
-    if (deleteResult.message !== 'File deleted') {
-      throw new Error('File not deleted');
+      console.log('deleteResult', deleteResult);
+    } catch (e) {
+      console.error('file delete error', (e as Error).message);
     }
 
     // if no errors commit transaction
     await connection.commit();
 
-    return {message: 'Media deleted'};
+    return {
+      message: 'Media deleted',
+    };
   } catch (e) {
     await connection.rollback();
     console.error('error', (e as Error).message);

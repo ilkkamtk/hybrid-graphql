@@ -84,13 +84,11 @@ const postLike = async (
     if (likeExists.length !== 0) {
       return null;
     }
-    const sql = promisePool.format(
+
+    const [likeResult] = await promisePool.execute<ResultSetHeader>(
       'INSERT INTO Likes (user_id, media_id) VALUES (?, ?)',
       [user_id, media_id],
     );
-
-    console.log(sql);
-    const [likeResult] = await promisePool.execute<ResultSetHeader>(sql);
     if (likeResult.affectedRows === 0) {
       return null;
     }
@@ -134,6 +132,25 @@ const deleteLike = async (
   }
 };
 
+const fetchLikeByMediaIdAndUserId = async (
+  media_id: number,
+  user_id: number,
+): Promise<Like> => {
+  try {
+    const [rows] = await promisePool.execute<RowDataPacket[] & Like[]>(
+      'SELECT * FROM Likes WHERE media_id = ? AND user_id = ?',
+      [media_id, user_id],
+    );
+    if (rows.length === 0) {
+      throw new Error('Like not found');
+    }
+    return rows[0];
+  } catch (e) {
+    console.error('fetchLikeByMediaIdAndUserId error', (e as Error).message);
+    throw new Error((e as Error).message);
+  }
+};
+
 export {
   fetchAllLikes,
   fetchLikesByMediaId,
@@ -141,4 +158,5 @@ export {
   postLike,
   deleteLike,
   fetchLikesCountByMediaId,
+  fetchLikeByMediaIdAndUserId,
 };
