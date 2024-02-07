@@ -4,9 +4,11 @@
   "description": "A basic starter for an express.js API with Typescript & GraphQL",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node dist/hybrid-graphql/src/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
+    "copygql": "copyfiles -E -u 1 src/api/schemas/*.graphql dist/hybrid-graphql/src",
+    "postbuild": "npm run copygql",
     "lint": "eslint --fix src test",
     "test": "jest"
   },
@@ -39,6 +41,7 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
