@@ -9,8 +9,8 @@ import typeDefs from './api/schemas/index';
 import resolvers from './api/resolvers/index';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
 import {
-  //ApolloServerPluginLandingPageLocalDefault,
-  ApolloServerPluginLandingPageProductionDefault,
+  ApolloServerPluginLandingPageLocalDefault,
+  //ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
 import {MyContext} from './local-types';
 import {authenticate} from './lib/functions';
@@ -46,7 +46,7 @@ const app = express();
       introspection: true,
       plugins: [
         createApollo4QueryValidationPlugin({schema}),
-        ApolloServerPluginLandingPageProductionDefault(),
+        ApolloServerPluginLandingPageLocalDefault(),
       ],
     });
 
