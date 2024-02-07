@@ -9,7 +9,7 @@ import typeDefs from './api/schemas/index';
 import resolvers from './api/resolvers/index';
 import {MessageResponse} from '@sharedTypes/MessageTypes';
 import {
-  ApolloServerPluginLandingPageLocalDefault,
+  //ApolloServerPluginLandingPageLocalDefault,
   ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
 import {MyContext} from './local-types';
@@ -43,11 +43,10 @@ const app = express();
 
     const server = new ApolloServer<MyContext>({
       schema,
+      introspection: true,
       plugins: [
         createApollo4QueryValidationPlugin({schema}),
-        process.env.NODE_ENV === 'production'
-          ? ApolloServerPluginLandingPageProductionDefault()
-          : ApolloServerPluginLandingPageLocalDefault(),
+        ApolloServerPluginLandingPageProductionDefault(),
       ],
     });
 
