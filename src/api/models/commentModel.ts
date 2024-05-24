@@ -1,7 +1,7 @@
-import {ResultSetHeader, RowDataPacket} from 'mysql2';
-import {Comment, UserLevel} from '@sharedTypes/DBTypes';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { Comment, UserLevel } from '@sharedTypes/DBTypes';
 import promisePool from '../../lib/db';
-import {MessageResponse} from '@sharedTypes/MessageTypes';
+import { MessageResponse } from '@sharedTypes/MessageTypes';
 
 // Request a list of comments
 const fetchAllComments = async (): Promise<Comment[] | null> => {
@@ -107,7 +107,7 @@ const postComment = async (
     if (result.affectedRows === 0) {
       return null;
     }
-    return {message: 'Comment added'};
+    return { message: 'Comment added' };
   } catch (e) {
     console.error('createComment error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -137,7 +137,7 @@ const updateComment = async (
     if (result.affectedRows === 0) {
       return null;
     }
-    return {message: 'Comment updated'};
+    return { message: 'Comment updated' };
   } catch (e) {
     console.error('updateComment error', (e as Error).message);
     throw new Error((e as Error).message);
@@ -164,7 +164,7 @@ const deleteComment = async (
     if (result.affectedRows === 0) {
       return null;
     }
-    return {message: 'Comment deleted'};
+    return { message: 'Comment deleted' };
   } catch (e) {
     console.error('deleteComment error', (e as Error).message);
     throw new Error((e as Error).message);
